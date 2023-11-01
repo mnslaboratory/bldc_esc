@@ -26,6 +26,138 @@
 				{
 					"name" : "encoder_a",
 					"strict" : false
+				},
+				{
+					"name" : "period_reference[0]",
+					"strict" : false
+				},
+				{
+					"name" : "period_reference[1]",
+					"strict" : false
+				},
+				{
+					"name" : "period_reference[2]",
+					"strict" : false
+				},
+				{
+					"name" : "period_reference[3]",
+					"strict" : false
+				},
+				{
+					"name" : "period_reference[4]",
+					"strict" : false
+				},
+				{
+					"name" : "period_reference[5]",
+					"strict" : false
+				},
+				{
+					"name" : "period_reference[6]",
+					"strict" : false
+				},
+				{
+					"name" : "period_reference[7]",
+					"strict" : false
+				},
+				{
+					"name" : "Kd_ext[0]",
+					"strict" : false
+				},
+				{
+					"name" : "override_internal_pid",
+					"strict" : false
+				},
+				{
+					"name" : "Kd_ext[1]",
+					"strict" : false
+				},
+				{
+					"name" : "Kd_ext[2]",
+					"strict" : false
+				},
+				{
+					"name" : "Kd_ext[3]",
+					"strict" : false
+				},
+				{
+					"name" : "Kd_ext[4]",
+					"strict" : false
+				},
+				{
+					"name" : "Kd_ext[5]",
+					"strict" : false
+				},
+				{
+					"name" : "Kd_ext[6]",
+					"strict" : false
+				},
+				{
+					"name" : "Kd_ext[7]",
+					"strict" : false
+				},
+				{
+					"name" : "Ki_ext[0]",
+					"strict" : false
+				},
+				{
+					"name" : "Ki_ext[1]",
+					"strict" : false
+				},
+				{
+					"name" : "Ki_ext[2]",
+					"strict" : false
+				},
+				{
+					"name" : "Ki_ext[3]",
+					"strict" : false
+				},
+				{
+					"name" : "Ki_ext[4]",
+					"strict" : false
+				},
+				{
+					"name" : "Ki_ext[5]",
+					"strict" : false
+				},
+				{
+					"name" : "Ki_ext[6]",
+					"strict" : false
+				},
+				{
+					"name" : "Ki_ext[7]",
+					"strict" : false
+				},
+				{
+					"name" : "Kp_ext[0]",
+					"strict" : false
+				},
+				{
+					"name" : "Kp_ext[1]",
+					"strict" : false
+				},
+				{
+					"name" : "Kp_ext[2]",
+					"strict" : false
+				},
+				{
+					"name" : "Kp_ext[3]",
+					"strict" : false
+				},
+				{
+					"name" : "Kp_ext[4]",
+					"strict" : false
+				},
+				{
+					"name" : "Kp_ext[5]",
+					"strict" : false
+				},
+				{
+					"name" : "Kp_ext[6]",
+					"strict" : false
+				},
+				{
+					"name" : "Kp_ext[7]",
+					"strict" : false
 				}
 			]
 		}

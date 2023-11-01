@@ -1,14 +1,14 @@
-Analysis & Synthesis Status : Successful - Wed Nov 01 18:35:42 2023
+Analysis & Synthesis Status : Successful - Wed Nov 01 23:57:33 2023
 Quartus Prime Version : 19.1.0 Build 670 09/22/2019 SJ Lite Edition
 Revision Name : bldc_esc
 Top-level Entity Name : bldc_esc
 Family : Cyclone V
 Logic utilization (in ALMs) : N/A
-Total registers : 42
-Total pins : 6
+Total registers : 67
+Total pins : 39
 Total virtual pins : 0
 Total block memory bits : 0
-Total DSP Blocks : 0
+Total DSP Blocks : 2
 Total HSSI RX PCSs : 0
 Total HSSI PMA RX Deserializers : 0
 Total HSSI TX PCSs : 0

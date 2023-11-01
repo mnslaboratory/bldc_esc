@@ -9,13 +9,13 @@ z2
 cModel Technology
 Z0 dC:/Users/Batu Cem/Documents/Quartus/projects/bldc/simulation/modelsim
 vbldc_esc
-!s110 1698775957
+!s110 1698869686
 !i10b 1
-!s100 YPWko5>a`Ee0F6g[JE3hI2
-IMlYk[h>7e@J7A[G96[ZDV1
+!s100 blJ]Jc:SP98H7A[ll38TB1
+Ig@9P>H05:ONR3^O<CjNjg1
 VDg1SIo80bB@j0V0VzS_@n1
 R0
-w1698775896
+w1698869631
 8C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v
 FC:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v
 L0 1
@@ -23,7 +23,7 @@ OV;L;10.5b;63
 r1
 !s85 0
 31
-!s108 1698775957.000000
+!s108 1698869686.000000
 !s107 C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v|
 !s90 -reportprogress|300|-vlog01compat|-work|work|+incdir+C:/Users/Batu Cem/Documents/Quartus/projects/bldc|C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v|
 !i113 1

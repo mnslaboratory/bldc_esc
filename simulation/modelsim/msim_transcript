@@ -12,24 +12,29 @@
 # 
 # vlog -vlog01compat -work work +incdir+C:/Users/Batu\ Cem/Documents/Quartus/projects/bldc {C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v}
 # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
-# Start time: 21:12:37 on Oct 31,2023
+# Start time: 23:14:46 on Nov 01,2023
 # vlog -reportprogress 300 -vlog01compat -work work "+incdir+C:/Users/Batu Cem/Documents/Quartus/projects/bldc" C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v 
 # -- Compiling module bldc_esc
 # 
 # Top level modules:
 # 	bldc_esc
-# End time: 21:12:37 on Oct 31,2023, Elapsed time: 0:00:00
+# End time: 23:14:46 on Nov 01,2023, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 vsim work.bldc_esc
 # vsim work.bldc_esc 
-# Start time: 21:13:31 on Oct 31,2023
+# Start time: 23:14:58 on Nov 01,2023
 # Loading work.bldc_esc
 add wave -position insertpoint  \
 sim:/bldc_esc/clk \
 sim:/bldc_esc/reset \
 sim:/bldc_esc/encoder_a \
 sim:/bldc_esc/encoder_b \
+sim:/bldc_esc/period_reference \
+sim:/bldc_esc/Kp_ext \
+sim:/bldc_esc/Ki_ext \
+sim:/bldc_esc/Kd_ext \
+sim:/bldc_esc/override_internal_pid \
 sim:/bldc_esc/motor_positive \
 sim:/bldc_esc/motor_negative \
 sim:/bldc_esc/motor_pwm \
@@ -39,8 +44,11 @@ sim:/bldc_esc/encoder_state \
 sim:/bldc_esc/prev_encoder_state \
 sim:/bldc_esc/pwm_direction \
 sim:/bldc_esc/countspeed_en \
-sim:/bldc_esc/speed \
+sim:/bldc_esc/period_speed \
 sim:/bldc_esc/speed_ctr \
+sim:/bldc_esc/Kp \
+sim:/bldc_esc/Ki \
+sim:/bldc_esc/Kd \
 sim:/bldc_esc/error \
 sim:/bldc_esc/integral \
 sim:/bldc_esc/derivative \
@@ -48,15 +56,35 @@ sim:/bldc_esc/pid_output \
 sim:/bldc_esc/previous_error
 # ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
 #           File in use by: Batu Cem  Hostname: DESKTOP-4RGL934  ProcessID: 10588
-#           Attempting to use alternate WLF file "./wlft372gzg".
+#           Attempting to use alternate WLF file "./wlftamezcr".
 # ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
-#           Using alternate file: ./wlft372gzg
+#           Using alternate file: ./wlftamezcr
 force -freeze sim:/bldc_esc/clk 1 0, 0 {50 ps} -r 100
 force -freeze sim:/bldc_esc/reset 1 0
 force -freeze sim:/bldc_esc/encoder_a 0 0
 force -freeze sim:/bldc_esc/encoder_b 0 0
+force -freeze sim:/bldc_esc/period_reference 0 0
+force -freeze sim:/bldc_esc/Kp_ext 0 0
+force -freeze sim:/bldc_esc/Ki_ext 0 0
+force -freeze sim:/bldc_esc/Kd_ext 0 0
+force -freeze sim:/bldc_esc/override_internal_pid 0 0
 run
 force -freeze sim:/bldc_esc/reset St0 0
+run
+force -freeze sim:/bldc_esc/encoder_b St1 0
+run
+force -freeze sim:/bldc_esc/encoder_a St1 0
+run
+force -freeze sim:/bldc_esc/encoder_b St0 0
+run
+force -freeze sim:/bldc_esc/encoder_a St0 0
+run
+run
+run
+run
+run
+run
+run
 force -freeze sim:/bldc_esc/encoder_b St1 0
 run
 force -freeze sim:/bldc_esc/encoder_a St1 0
@@ -67,12 +95,10 @@ force -freeze sim:/bldc_esc/encoder_a St0 0
 run
 run
 run
-force -freeze sim:/bldc_esc/encoder_b St1 0
 run
-force -freeze sim:/bldc_esc/encoder_a St1 0
 run
-force -freeze sim:/bldc_esc/encoder_b St0 0
 run
-force -freeze sim:/bldc_esc/encoder_a St0 0
-# End time: 23:44:51 on Oct 31,2023, Elapsed time: 2:31:20
+force -freeze sim:/bldc_esc/period_reference 1100 0
+run
+# End time: 23:57:14 on Nov 01,2023, Elapsed time: 0:42:16
 # Errors: 0, Warnings: 2

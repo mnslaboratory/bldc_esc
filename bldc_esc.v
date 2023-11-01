@@ -6,7 +6,12 @@
   input wire reset,            		// when it is 1 motor does run
   input wire encoder_a,  				// encoder A pin input
   input wire encoder_b,  				// encoder B pin input
-  //input reg [DATA_WIDTH-1] reference,	// Reference speed input, commented out since the ambiguity, will try with constant 900RPM reference speed
+  input [DATA_WIDTH/2-1:0] period_reference,	// period_reference speed input, commented out since the ambiguity, will try with constant 900RPM period_reference speed
+  input wire [DATA_WIDTH/2-1:0] Kp_ext,//External proportional constant
+  input wire [DATA_WIDTH/2-1:0] Ki_ext,//External integral constant
+  input wire [DATA_WIDTH/2-1:0] Kd_ext,//External derivative constant
+  input wire override_internal_pid,		//select pin for external/internal pid constants
+  //output reg locked,					//uncertain output pin for "locked" -accurate to a margin- output
   output reg motor_positive,   		// BLDC motor PWM signal
   output reg motor_negative 			// Motor direction control (1 bit)
   
@@ -21,6 +26,7 @@
   reg [1:0]encoder_state;
   reg [1:0]prev_encoder_state;
 	reg [1:0]pwm_direction;
+	//locked=1'b1;
   //assign pwm_duty_cycle = pid_output; // BU BAĞLANTI ÇOK ÖNEMLİ ÇALIŞMIYOR OLABİLİR.
   //assign reg ile çalışmıyor, eşitliğin always içinde yaratılması gerek.
 //1st subroutin=PWM GENERATOR////////////////////////////////////////////// 
@@ -47,6 +53,7 @@
       motor_positive <= 1'b0;
       motor_negative <= 1'b0;
       pwm_direction<=2'b00;
+		
     end else begin
     encoder_state <= {encoder_a, encoder_b};
       case ({encoder_state, prev_encoder_state})
@@ -96,22 +103,36 @@
     end
   end
 //PID control////////////////////////////////////////////////
-  
  // PID constants
    
    reg countspeed_en;
-   reg [DATA_WIDTH-1:0] speed = 16'h0;// Bunu countera bağlamakta yarar olabilir. 
-															//-->counter "11" encoder stateleri arasındaki clockları sayacak şekilde ayarlandı
+   reg [DATA_WIDTH-1:0] period_speed = 16'h0;// Counter connected to rise of encoder A that will infer speed by measuring period of clk cycles
   reg [DATA_WIDTH-1:0] speed_ctr;
-  parameter Kp = {DATA_WIDTH/2{1'b1}};
-  parameter Ki = {DATA_WIDTH/2{1'b0}};
-  parameter Kd = {DATA_WIDTH/2{1'b0}};
+  reg [DATA_WIDTH/2-1:0] Kp = {DATA_WIDTH/2{1'b0}};
+  reg [DATA_WIDTH/2-1:0] Ki = {DATA_WIDTH/2{1'b0}};
+  reg [DATA_WIDTH/2-1:0] Kd = {DATA_WIDTH/2{1'b0}};
   
-  //dubious logic of carrying out speed<->clock cycle conversion:
-  //We will give constant reference of 900RPM=>15 rounds each second, with clock period t=1ms, reference=15e3 clock cycles
-  //test d10 for reference;
-  parameter reference = {16'd10};
-
+  //MUX Internal/External PID constants
+  always @(posedge clk or posedge reset) begin
+    if (reset) begin
+		Kp = {DATA_WIDTH/2{1'b1}};
+		Ki = {DATA_WIDTH/2{1'b0}};
+		Kd = {DATA_WIDTH/2{1'b0}};
+    end else begin
+		if(override_internal_pid) begin
+			Kp<=Kp_ext;
+			Ki<=Ki_ext;
+			Kd<=Kd_ext;
+		end else begin
+			Kp<=Kp;
+			Ki<=Ki;
+			Kd<=Kd;
+		end
+	 end
+  end
+  
+  
+	
 
   // Variables for PID control
   reg [DATA_WIDTH/2-1:0] error;
@@ -120,28 +141,23 @@
   reg [(DATA_WIDTH)-1:0] pid_output;
   reg [DATA_WIDTH/2-1:0] previous_error;
 	//Calculate Speed
-	always @(posedge encoder_a or posedge reset)
+	//dubious logic of carrying out speed<->clock cycle conversion:
+  //We will give constant period_reference of 900RPM=>15 rounds each second, with clock period t=1ms, period_reference=15e3 clock cycles
+	always @(posedge reset or posedge clk)
 	begin
 		if(reset) begin
 			countspeed_en<=1'b0;
+			speed_ctr<={DATA_WIDTH{1'b0}};
 		end
 		else begin
-			countspeed_en<= ~countspeed_en;
+			if(prev_encoder_state[0]==1'b0 && encoder_a==1'b1) begin
+				period_speed<=speed_ctr;
+				speed_ctr<={DATA_WIDTH{1'b0}};
+			end else begin
+				speed_ctr<=speed_ctr+1;
+			end
 		end
 	end
-	always @(posedge clk or posedge reset) begin
-		if(reset) begin
-			speed_ctr<=16'd0;
-		end else begin
-			if(countspeed_en==1'b1)begin
-				speed_ctr<=speed_ctr+1;
-			end else if(countspeed_en==1'b0) begin
-				speed<=speed_ctr; //we can find error by substracting new speed from previous speed
-				speed_ctr<=16'd0;
-			end
-		
-		end
-  end
   
   
   // Calculate the error
@@ -149,8 +165,8 @@
 	if(reset) begin
 	error=8'b0;
 	end else begin
-    error = reference - speed;
-	end
+    error = period_reference - period_speed;
+	 end
   end
 
   // Calculate the integral
@@ -159,7 +175,7 @@
       integral <= 8'b0;
 		previous_error <= {DATA_WIDTH/2{1'b0}};
     end else begin
-      if (integral + error > 127) begin //These are very high values for ASIC, need to push for lower register
+      if (integral + error > 127) begin //These are very high values for ASIC, need to push for lower register(?)
 
         integral <= 127;  
       end else if (integral + error < -128) begin
@@ -182,5 +198,7 @@
 	 
 	 pwm_duty_cycle = pid_output;
   end
+  
+ 
 
 endmodule

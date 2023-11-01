@@ -1,1 +1,1 @@
-Warning (10268): Verilog HDL information at bldc_esc.v(121): always construct contains both blocking and non-blocking assignments File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 121
+Warning (10268): Verilog HDL information at bldc_esc.v(116): always construct contains both blocking and non-blocking assignments File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 116

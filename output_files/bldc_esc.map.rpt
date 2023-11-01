@@ -1,5 +1,5 @@
 Analysis & Synthesis report for bldc_esc
-Wed Nov 01 18:35:42 2023
+Wed Nov 01 23:57:33 2023
 Quartus Prime Version 19.1.0 Build 670 09/22/2019 SJ Lite Edition
 
 
@@ -13,15 +13,18 @@ Quartus Prime Version 19.1.0 Build 670 09/22/2019 SJ Lite Edition
   5. Analysis & Synthesis Source Files Read
   6. Analysis & Synthesis Resource Usage Summary
   7. Analysis & Synthesis Resource Utilization by Entity
-  8. State Machine - |bldc_esc|pwm_direction
-  9. Registers Removed During Synthesis
- 10. Removed Registers Triggering Further Register Optimizations
- 11. General Register Statistics
- 12. Multiplexer Restructuring Statistics (Restructuring Performed)
- 13. Parameter Settings for User Entity Instance: Top-level Entity: |bldc_esc
- 14. Post-Synthesis Netlist Statistics for Top Partition
- 15. Elapsed Time Per Partition
- 16. Analysis & Synthesis Messages
+  8. Analysis & Synthesis DSP Block Usage Summary
+  9. State Machine - |bldc_esc|pwm_direction
+ 10. Registers Removed During Synthesis
+ 11. Removed Registers Triggering Further Register Optimizations
+ 12. General Register Statistics
+ 13. Inverted Register Statistics
+ 14. Multiplexer Restructuring Statistics (Restructuring Performed)
+ 15. Parameter Settings for User Entity Instance: Top-level Entity: |bldc_esc
+ 16. Post-Synthesis Netlist Statistics for Top Partition
+ 17. Elapsed Time Per Partition
+ 18. Analysis & Synthesis Messages
+ 19. Analysis & Synthesis Suppressed Messages
 
 
 
@@ -48,17 +51,17 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                  ;
 +---------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Wed Nov 01 18:35:42 2023       ;
+; Analysis & Synthesis Status     ; Successful - Wed Nov 01 23:57:33 2023       ;
 ; Quartus Prime Version           ; 19.1.0 Build 670 09/22/2019 SJ Lite Edition ;
 ; Revision Name                   ; bldc_esc                                    ;
 ; Top-level Entity Name           ; bldc_esc                                    ;
 ; Family                          ; Cyclone V                                   ;
 ; Logic utilization (in ALMs)     ; N/A                                         ;
-; Total registers                 ; 42                                          ;
-; Total pins                      ; 6                                           ;
+; Total registers                 ; 67                                          ;
+; Total pins                      ; 39                                          ;
 ; Total virtual pins              ; 0                                           ;
 ; Total block memory bits         ; 0                                           ;
-; Total DSP Blocks                ; 0                                           ;
+; Total DSP Blocks                ; 2                                           ;
 ; Total HSSI RX PCSs              ; 0                                           ;
 ; Total HSSI PMA RX Deserializers ; 0                                           ;
 ; Total HSSI TX PCSs              ; 0                                           ;
@@ -186,25 +189,25 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+-------------+
 ; Resource                                    ; Usage       ;
 +---------------------------------------------+-------------+
-; Estimate of Logic utilization (ALMs needed) ; 43          ;
+; Estimate of Logic utilization (ALMs needed) ; 50          ;
 ;                                             ;             ;
-; Combinational ALUT usage for logic          ; 74          ;
+; Combinational ALUT usage for logic          ; 85          ;
 ;     -- 7 input functions                    ; 0           ;
-;     -- 6 input functions                    ; 10          ;
-;     -- 5 input functions                    ; 4           ;
-;     -- 4 input functions                    ; 5           ;
-;     -- <=3 input functions                  ; 55          ;
+;     -- 6 input functions                    ; 6           ;
+;     -- 5 input functions                    ; 6           ;
+;     -- 4 input functions                    ; 8           ;
+;     -- <=3 input functions                  ; 65          ;
 ;                                             ;             ;
-; Dedicated logic registers                   ; 42          ;
+; Dedicated logic registers                   ; 67          ;
 ;                                             ;             ;
-; I/O pins                                    ; 6           ;
+; I/O pins                                    ; 39          ;
 ;                                             ;             ;
-; Total DSP Blocks                            ; 0           ;
+; Total DSP Blocks                            ; 2           ;
 ;                                             ;             ;
 ; Maximum fan-out node                        ; reset~input ;
-; Maximum fan-out                             ; 50          ;
-; Total fan-out                               ; 381         ;
-; Average fan-out                             ; 2.98        ;
+; Maximum fan-out                             ; 76          ;
+; Total fan-out                               ; 561         ;
+; Average fan-out                             ; 2.42        ;
 +---------------------------------------------+-------------+
 
 
@@ -213,9 +216,22 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+---------------------+-------------+--------------+
 ; Compilation Hierarchy Node ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name ; Entity Name ; Library Name ;
 +----------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+---------------------+-------------+--------------+
-; |bldc_esc                  ; 74 (74)             ; 42 (42)                   ; 0                 ; 0          ; 6    ; 0            ; |bldc_esc           ; bldc_esc    ; work         ;
+; |bldc_esc                  ; 85 (85)             ; 67 (67)                   ; 0                 ; 2          ; 39   ; 0            ; |bldc_esc           ; bldc_esc    ; work         ;
 +----------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+---------------------+-------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
+
+
++-----------------------------------------------+
+; Analysis & Synthesis DSP Block Usage Summary  ;
++---------------------------------+-------------+
+; Statistic                       ; Number Used ;
++---------------------------------+-------------+
+; Independent 18x18 plus 36       ; 1           ;
+; Sum of two 18x18                ; 1           ;
+; Total number of DSP blocks      ; 2           ;
+;                                 ;             ;
+; Fixed Point Unsigned Multiplier ; 3           ;
++---------------------------------+-------------+
 
 
 Encoding Type:  One-Hot
@@ -230,32 +246,33 @@ Encoding Type:  One-Hot
 +------------------+------------------+------------------+------------------+
 
 
-+-------------------------------------------------------------+
-; Registers Removed During Synthesis                          ;
-+----------------------------------------+--------------------+
-; Register name                          ; Reason for Removal ;
-+----------------------------------------+--------------------+
-; speed[8..15]                           ; Lost fanout        ;
-; pwm_direction.00                       ; Lost fanout        ;
-; speed_ctr[8..15]                       ; Lost fanout        ;
-; Total Number of Removed Registers = 17 ;                    ;
-+----------------------------------------+--------------------+
++------------------------------------------------------------------+
+; Registers Removed During Synthesis                               ;
++----------------------------------------+-------------------------+
+; Register name                          ; Reason for Removal      ;
++----------------------------------------+-------------------------+
+; period_speed[8..15]                    ; Lost fanout             ;
+; integral[1..6]                         ; Merged with integral[0] ;
+; pwm_direction.00                       ; Lost fanout             ;
+; speed_ctr[8..15]                       ; Lost fanout             ;
+; Total Number of Removed Registers = 23 ;                         ;
++----------------------------------------+-------------------------+
 
 
-+-----------------------------------------------------------------------------+
-; Removed Registers Triggering Further Register Optimizations                 ;
-+---------------+--------------------+----------------------------------------+
-; Register name ; Reason for Removal ; Registers Removed due to This Register ;
-+---------------+--------------------+----------------------------------------+
-; speed[15]     ; Lost Fanouts       ; speed_ctr[15]                          ;
-; speed[14]     ; Lost Fanouts       ; speed_ctr[14]                          ;
-; speed[13]     ; Lost Fanouts       ; speed_ctr[13]                          ;
-; speed[12]     ; Lost Fanouts       ; speed_ctr[12]                          ;
-; speed[11]     ; Lost Fanouts       ; speed_ctr[11]                          ;
-; speed[10]     ; Lost Fanouts       ; speed_ctr[10]                          ;
-; speed[9]      ; Lost Fanouts       ; speed_ctr[9]                           ;
-; speed[8]      ; Lost Fanouts       ; speed_ctr[8]                           ;
-+---------------+--------------------+----------------------------------------+
++--------------------------------------------------------------------------------+
+; Removed Registers Triggering Further Register Optimizations                    ;
++------------------+--------------------+----------------------------------------+
+; Register name    ; Reason for Removal ; Registers Removed due to This Register ;
++------------------+--------------------+----------------------------------------+
+; period_speed[15] ; Lost Fanouts       ; speed_ctr[15]                          ;
+; period_speed[14] ; Lost Fanouts       ; speed_ctr[14]                          ;
+; period_speed[13] ; Lost Fanouts       ; speed_ctr[13]                          ;
+; period_speed[12] ; Lost Fanouts       ; speed_ctr[12]                          ;
+; period_speed[11] ; Lost Fanouts       ; speed_ctr[11]                          ;
+; period_speed[10] ; Lost Fanouts       ; speed_ctr[10]                          ;
+; period_speed[9]  ; Lost Fanouts       ; speed_ctr[9]                           ;
+; period_speed[8]  ; Lost Fanouts       ; speed_ctr[8]                           ;
++------------------+--------------------+----------------------------------------+
 
 
 +------------------------------------------------------+
@@ -263,14 +280,31 @@ Encoding Type:  One-Hot
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 42    ;
+; Total registers                              ; 67    ;
 ; Number of registers using Synchronous Clear  ; 24    ;
 ; Number of registers using Synchronous Load   ; 0     ;
-; Number of registers using Asynchronous Clear ; 33    ;
+; Number of registers using Asynchronous Clear ; 58    ;
 ; Number of registers using Asynchronous Load  ; 0     ;
-; Number of registers using Clock Enable       ; 11    ;
+; Number of registers using Clock Enable       ; 35    ;
 ; Number of registers using Preset             ; 0     ;
 +----------------------------------------------+-------+
+
+
++--------------------------------------------------+
+; Inverted Register Statistics                     ;
++----------------------------------------+---------+
+; Inverted Register                      ; Fan out ;
++----------------------------------------+---------+
+; Kp[0]                                  ; 1       ;
+; Kp[1]                                  ; 1       ;
+; Kp[2]                                  ; 1       ;
+; Kp[3]                                  ; 1       ;
+; Kp[4]                                  ; 1       ;
+; Kp[5]                                  ; 1       ;
+; Kp[6]                                  ; 1       ;
+; Kp[7]                                  ; 1       ;
+; Total number of inverted registers = 8 ;         ;
++----------------------------------------+---------+
 
 
 +------------------------------------------------------------------------------------------------------------------------------------------+
@@ -278,7 +312,7 @@ Encoding Type:  One-Hot
 +--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------+
 ; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------+
-; 16:1               ; 3 bits    ; 30 LEs        ; 21 LEs               ; 9 LEs                  ; No         ; |bldc_esc|Mux2             ;
+; 16:1               ; 3 bits    ; 30 LEs        ; 21 LEs               ; 9 LEs                  ; No         ; |bldc_esc|Mux1             ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------+
 
 
@@ -298,26 +332,30 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 42                          ;
-;     CLR               ; 7                           ;
+; arriav_ff             ; 67                          ;
+;     CLR               ; 8                           ;
 ;     CLR SCLR          ; 24                          ;
 ;     ENA               ; 9                           ;
-;     ENA CLR           ; 2                           ;
-; arriav_lcell_comb     ; 74                          ;
-;     arith             ; 47                          ;
-;         1 data inputs ; 32                          ;
+;     ENA CLR           ; 26                          ;
+; arriav_lcell_comb     ; 85                          ;
+;     arith             ; 33                          ;
+;         0 data inputs ; 1                           ;
+;         1 data inputs ; 24                          ;
+;         3 data inputs ; 8                           ;
+;     normal            ; 44                          ;
+;         1 data inputs ; 9                           ;
 ;         2 data inputs ; 14                          ;
 ;         3 data inputs ; 1                           ;
-;     normal            ; 27                          ;
-;         1 data inputs ; 1                           ;
-;         2 data inputs ; 7                           ;
-;         4 data inputs ; 5                           ;
-;         5 data inputs ; 4                           ;
-;         6 data inputs ; 10                          ;
-; boundary_port         ; 6                           ;
+;         4 data inputs ; 8                           ;
+;         5 data inputs ; 6                           ;
+;         6 data inputs ; 6                           ;
+;     shared            ; 8                           ;
+;         2 data inputs ; 8                           ;
+; arriav_mac            ; 2                           ;
+; boundary_port         ; 39                          ;
 ;                       ;                             ;
-; Max LUT depth         ; 6.40                        ;
-; Average LUT depth     ; 3.58                        ;
+; Max LUT depth         ; 4.80                        ;
+; Average LUT depth     ; 2.19                        ;
 +-----------------------+-----------------------------+
 
 
@@ -326,7 +364,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:01     ;
+; Top            ; 00:00:00     ;
 +----------------+--------------+
 
 
@@ -336,7 +374,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 19.1.0 Build 670 09/22/2019 SJ Lite Edition
-    Info: Processing started: Wed Nov 01 18:35:26 2023
+    Info: Processing started: Wed Nov 01 23:57:23 2023
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off bldc_esc -c bldc_esc
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -346,29 +384,51 @@ Info (12021): Found 1 design units, including 1 entities, in source file bldc_es
     Info (12023): Found entity 1: bldc_esc File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 1
 Info (12021): Found 1 design units, including 1 entities, in source file test_bldc_motor.v
     Info (12023): Found entity 1: test_bldc_motor File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/test_bldc_motor.v Line: 1
-Warning (10222): Verilog HDL Parameter Declaration warning at bldc_esc.v(16): Parameter Declaration in module "bldc_esc" behaves as a Local Parameter Declaration because the module has a Module Parameter Port List File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 16
-Warning (10222): Verilog HDL Parameter Declaration warning at bldc_esc.v(106): Parameter Declaration in module "bldc_esc" behaves as a Local Parameter Declaration because the module has a Module Parameter Port List File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 106
-Warning (10222): Verilog HDL Parameter Declaration warning at bldc_esc.v(107): Parameter Declaration in module "bldc_esc" behaves as a Local Parameter Declaration because the module has a Module Parameter Port List File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 107
-Warning (10222): Verilog HDL Parameter Declaration warning at bldc_esc.v(108): Parameter Declaration in module "bldc_esc" behaves as a Local Parameter Declaration because the module has a Module Parameter Port List File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 108
-Warning (10222): Verilog HDL Parameter Declaration warning at bldc_esc.v(113): Parameter Declaration in module "bldc_esc" behaves as a Local Parameter Declaration because the module has a Module Parameter Port List File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 113
+Warning (10222): Verilog HDL Parameter Declaration warning at bldc_esc.v(21): Parameter Declaration in module "bldc_esc" behaves as a Local Parameter Declaration because the module has a Module Parameter Port List File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 21
 Info (12127): Elaborating entity "bldc_esc" for the top level hierarchy
-Warning (10230): Verilog HDL assignment warning at bldc_esc.v(31): truncated value with size 32 to match size of target (16) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 31
-Warning (10230): Verilog HDL assignment warning at bldc_esc.v(137): truncated value with size 32 to match size of target (16) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 137
-Warning (10230): Verilog HDL assignment warning at bldc_esc.v(152): truncated value with size 16 to match size of target (8) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 152
-Warning (10230): Verilog HDL assignment warning at bldc_esc.v(167): truncated value with size 32 to match size of target (8) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 167
-Warning (10240): Verilog HDL Always Construct warning at bldc_esc.v(157): inferring latch(es) for variable "previous_error", which holds its previous value in one or more paths through the always construct File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 157
+Warning (10036): Verilog HDL or VHDL warning at bldc_esc.v(108): object "countspeed_en" assigned a value but never read File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 108
+Warning (10230): Verilog HDL assignment warning at bldc_esc.v(37): truncated value with size 32 to match size of target (16) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 37
+Warning (10230): Verilog HDL assignment warning at bldc_esc.v(157): truncated value with size 32 to match size of target (16) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 157
+Warning (10230): Verilog HDL assignment warning at bldc_esc.v(168): truncated value with size 16 to match size of target (8) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 168
+Warning (10230): Verilog HDL assignment warning at bldc_esc.v(183): truncated value with size 32 to match size of target (8) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 183
+Warning (10240): Verilog HDL Always Construct warning at bldc_esc.v(173): inferring latch(es) for variable "previous_error", which holds its previous value in one or more paths through the always construct File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
+Info (10041): Inferred latch for "previous_error[0]" at bldc_esc.v(173) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
+Info (10041): Inferred latch for "previous_error[1]" at bldc_esc.v(173) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
+Info (10041): Inferred latch for "previous_error[2]" at bldc_esc.v(173) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
+Info (10041): Inferred latch for "previous_error[3]" at bldc_esc.v(173) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
+Info (10041): Inferred latch for "previous_error[4]" at bldc_esc.v(173) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
+Info (10041): Inferred latch for "previous_error[5]" at bldc_esc.v(173) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
+Info (10041): Inferred latch for "previous_error[6]" at bldc_esc.v(173) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
+Info (10041): Inferred latch for "previous_error[7]" at bldc_esc.v(173) File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 173
 Info (286030): Timing-Driven Synthesis is running
+Critical Warning (18061): Ignored Power-Up Level option on the following registers
+    Critical Warning (18010): Register Kp[0] will power up to High File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 122
+    Critical Warning (18010): Register Kp[1] will power up to High File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 122
+    Critical Warning (18010): Register Kp[2] will power up to High File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 122
+    Critical Warning (18010): Register Kp[3] will power up to High File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 122
+    Critical Warning (18010): Register Kp[4] will power up to High File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 122
+    Critical Warning (18010): Register Kp[5] will power up to High File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 122
+    Critical Warning (18010): Register Kp[6] will power up to High File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 122
+    Critical Warning (18010): Register Kp[7] will power up to High File: C:/Users/Batu Cem/Documents/Quartus/projects/bldc/bldc_esc.v Line: 122
 Info (17049): 17 registers lost all their fanouts during netlist optimizations.
+Info (144001): Generated suppressed messages file C:/Users/Batu Cem/Documents/Quartus/projects/bldc/output_files/bldc_esc.map.smsg
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
-Info (21057): Implemented 92 device resources after synthesis - the final resource count might be different
-    Info (21058): Implemented 4 input pins
+Info (21057): Implemented 155 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 37 input pins
     Info (21059): Implemented 2 output pins
-    Info (21061): Implemented 86 logic cells
-Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 11 warnings
-    Info: Peak virtual memory: 4821 megabytes
-    Info: Processing ended: Wed Nov 01 18:35:42 2023
-    Info: Elapsed time: 00:00:16
-    Info: Total CPU time (on all processors): 00:00:23
+    Info (21061): Implemented 114 logic cells
+    Info (21062): Implemented 2 DSP elements
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 17 warnings
+    Info: Peak virtual memory: 4826 megabytes
+    Info: Processing ended: Wed Nov 01 23:57:33 2023
+    Info: Elapsed time: 00:00:10
+    Info: Total CPU time (on all processors): 00:00:20
+
+
++------------------------------------------+
+; Analysis & Synthesis Suppressed Messages ;
++------------------------------------------+
+The suppressed messages can be found in C:/Users/Batu Cem/Documents/Quartus/projects/bldc/output_files/bldc_esc.map.smsg.
 
 
