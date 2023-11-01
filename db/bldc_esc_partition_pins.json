@@ -1,0 +1,33 @@
+{
+	"partitions" : [
+		{
+			"name" : "Top",
+			"pins" : [
+				{
+					"name" : "motor_positive",
+					"strict" : false
+				},
+				{
+					"name" : "motor_negative",
+					"strict" : false
+				},
+				{
+					"name" : "clk",
+					"strict" : false
+				},
+				{
+					"name" : "reset",
+					"strict" : false
+				},
+				{
+					"name" : "encoder_b",
+					"strict" : false
+				},
+				{
+					"name" : "encoder_a",
+					"strict" : false
+				}
+			]
+		}
+	]
+}

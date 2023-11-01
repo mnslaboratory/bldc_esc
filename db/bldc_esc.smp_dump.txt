@@ -1,0 +1,6 @@
+
+State Machine - |bldc_esc|pwm_direction
+Name pwm_direction.00 pwm_direction.10 pwm_direction.01 
+pwm_direction.00 0 0 0 
+pwm_direction.01 1 0 1 
+pwm_direction.10 1 1 0 
