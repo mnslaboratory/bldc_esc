@@ -1,4 +1,4 @@
- module bldc_esc#(
+ module bldc_esc_1#(
   parameter DATA_WIDTH = 16, //only used at the 3rd subroutine
   parameter ENCODER_WIDTH = 3 //stop using it
 )(
