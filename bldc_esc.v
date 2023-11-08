@@ -81,40 +81,64 @@
     end
   end
   
-  always @(pwm_direction or pwm_en or reset) begin
-    if (reset) begin
-      motor_positive <= 1'b0;
-      motor_negative <= 1'b0;
-		
-    end else begin
-	 
-		if(pwm_en==1'b1)begin
+  always @(posedge clk or posedge reset) begin
+	if(reset) begin
+		motor_positive<=1'b0;
+		motor_negative<=1'b0;
+	end else begin
+		if(pwm_en==1'b0) begin
+		if(period_reference>0) begin
+			motor_positive<=motor_pwm;
+			motor_negative<=1'b0;
+		end else if (period_reference<0) begin
+			motor_positive<=1'b0;
+			motor_negative<=motor_pwm;
+		end else begin
 			motor_positive<=1'b0;
 			motor_negative<=1'b0;
-		end else begin
-      case(pwm_direction)
-        2'b00: begin
-          
-      	motor_positive <= 1'b0;
-      	motor_negative <= 1'b0;
-        end
-        2'b01:begin
-          motor_positive<=1'b0;
-          motor_negative<=motor_pwm;
-        end
-        2'b10:begin
-          motor_positive<=motor_pwm;
-          motor_negative<=1'b0;
-        end
-        default: begin
-          
-      		motor_positive <= 1'b0;
-      		motor_negative <= 1'b0;
-        end
-      endcase
 		end
-    end
+		end else begin
+			motor_positive<=1'b0;
+			motor_negative<=1'b0;
+		end
+	end
+  
   end
+  
+  //always @(pwm_direction or pwm_en or reset) begin //method to determine motor pins from encoder
+  //  if (reset) begin
+  //    motor_positive <= 1'b0;
+  //    motor_negative <= 1'b0;
+	//	
+    //end else begin
+	 //
+		//if(pwm_en==1'b0)begin
+		//	motor_positive<=1'b0;
+		//	motor_negative<=1'b0;
+	//	end else begin
+   //   case(pwm_direction)
+   //     2'b00: begin
+   //       
+   //   	motor_positive <= 1'b0;
+   //   	motor_negative <= 1'b0;
+   //     end
+   //     2'b01:begin
+   //       motor_positive<=1'b0;
+   //       motor_negative<=motor_pwm;
+   //     end
+   //     2'b10:begin
+   //       motor_positive<=motor_pwm;
+   //       motor_negative<=1'b0;
+   //     end
+   //     default: begin
+   //       
+   //   		motor_positive <= 1'b0;
+   //   		motor_negative <= 1'b0;
+   //     end
+   //   endcase
+	//	end
+   // end
+  //end
   
 //PID control////////////////////////////////////////////////
  // PID constants
