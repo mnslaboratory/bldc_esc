@@ -2,7 +2,7 @@
   parameter DATA_WIDTH = 16, //only used at the 3rd subroutine
   parameter ENCODER_WIDTH = 3 //stop using it
 )(
-  input wire clk,              		// clock input. when there is no clk signal motor does not run
+  input wire clk,              		// clock input. when there is no clk signal motor does not run, CLK @50MHz, T=20ns
   input wire reset,            		// when it is 1 motor does run
   input wire [2:0] pid_select,			//select control type: 100 for P, 110 for PI, 111 for PID (?)
   input wire [DATA_WIDTH-1:0] period_speed,//system output of speed measured in clock cycles
