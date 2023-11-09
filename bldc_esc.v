@@ -36,7 +36,7 @@
     end else begin
       pwm_counter <= pwm_counter + 1;
 
-      motor_pwm <= (pwm_counter < pwm_duty_cycle); // Generate PWM signal and send it to the motor
+      motor_pwm <= (pwm_counter < pwm_duty_cycle) & pwm_en; // Generate PWM signal and send it to the motor
 
       // Reset PWM counter at the end of the PWM period
       if (pwm_counter == pwm_period) begin
@@ -86,22 +86,18 @@
 		motor_positive<=1'b0;
 		motor_negative<=1'b0;
 	end else begin
-		if(pwm_en==1'b0) begin
-		if(period_reference>0) begin
-			motor_positive<=motor_pwm;
-			motor_negative<=1'b0;
-		end else if (period_reference<0) begin
-			motor_positive<=1'b0;
-			motor_negative<=motor_pwm;
+		if(period_reference>127) begin
+			motor_positive=1'b0;
+			motor_negative=motor_pwm;
+		end else if (period_reference>0) begin
+			motor_positive=motor_pwm;
+			motor_negative=1'b0;
 		end else begin
-			motor_positive<=1'b0;
-			motor_negative<=1'b0;
+			motor_positive=1'b0;
+			motor_negative=1'b0;
+			end
 		end
-		end else begin
-			motor_positive<=1'b0;
-			motor_negative<=1'b0;
-		end
-	end
+	
   
   end
   
