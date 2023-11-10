@@ -1,4 +1,4 @@
- module test_bldc_motor #(//MOTOR EMULATION MODULE
+module test_bldc_motor #(//MOTOR EMULATION MODULE
   parameter DATA_WIDTH = 16
 )(
   input wire clk,              		// clock input. when there is no clk signal motor does not run
@@ -11,10 +11,12 @@
 );
 
 //Infer PWM Duty Cycle
-	reg [DATA_WIDTH-1:0] pwm_counter;
+	reg signed[DATA_WIDTH-1:0] pwm_counter;
 
-	reg [DATA_WIDTH-1:0] pwm_duty_cycle_ones;
-	reg [DATA_WIDTH-1:0] motor_period;
+	reg signed[DATA_WIDTH-1:0] pwm_duty_cycle_ones;
+   reg signed[DATA_WIDTH-1:0] prev_motor_period;
+	reg signed[DATA_WIDTH-1:0] motor_period;
+   reg signed[DATA_WIDTH-1:0] ideal_period;
 	reg[1:0] count_direction;
 	
 	always @(posedge motor_positive or posedge motor_negative) begin
@@ -25,14 +27,27 @@
 			end else begin
 				count_direction<=2'b00;//default case when turning without encoders triggering or stopping motor
 			end
-			motor_period<=(100-pwm_duty_cycle_ones*100/pwm_counter)*2+20 -2;
+      ideal_period<=(100-pwm_duty_cycle_ones*100/pwm_counter)*2+20;
+      if((100-pwm_duty_cycle_ones*100/pwm_counter)*2+20>16'd10+prev_motor_period) begin
+        		
+      			prev_motor_period<=motor_period;
+        		motor_period<=motor_period+16'd10;
+      end else if (prev_motor_period>16'd10+(100-pwm_duty_cycle_ones*100/pwm_counter)*2+20) begin
+        		prev_motor_period<=motor_period;
+        		motor_period<=motor_period-16'd10;
+      end else begin
+        		prev_motor_period<=motor_period;
+        		motor_period<=(100-pwm_duty_cycle_ones*100/pwm_counter)*2+20 -2;
+      end
+			pwm_counter<={DATA_WIDTH{1'b0}};
+			pwm_duty_cycle_ones<={DATA_WIDTH{1'b0}};
+      
 	end
-	
 	always @(posedge clk or posedge reset) 
 	begin
 		if(reset==1'b1) begin //reset clk counters when reset or at the end when pwm=100% is given
-			pwm_counter<={DATA_WIDTH-1{1'b0}};
-			pwm_duty_cycle_ones<={DATA_WIDTH-1{1'b0}};
+			pwm_counter<={DATA_WIDTH{1'b0}};
+			pwm_duty_cycle_ones<={DATA_WIDTH{1'b0}};
 		end else begin
 			case (count_direction)//count pwm with the direciton given
         2'b01:begin
@@ -48,8 +63,8 @@
 			 end
         end
         default: begin
-				pwm_counter<={DATA_WIDTH-1{1'b0}};	//reset in any other case
-				pwm_duty_cycle_ones<={DATA_WIDTH-1{1'b0}};
+				pwm_counter<={DATA_WIDTH{1'b0}};	//reset in any other case
+				pwm_duty_cycle_ones<={DATA_WIDTH{1'b0}};
         end
       endcase
 		end
@@ -61,13 +76,15 @@
 	always @(posedge clk or posedge reset) 
 	begin
 		if(reset) begin
-			fsm_ctr<={DATA_WIDTH-1{1'b0}};
+			fsm_ctr<={DATA_WIDTH{1'b0}};
+          	encoder_a<=1'b0;
+          	encoder_b<=1'b0;
 		end else begin
-			if(fsm_ctr==motor_period) begin
-				fsm_ctr<={DATA_WIDTH-1{1'b0}};//reset fsm each period
+          if(fsm_ctr>=motor_period) begin
+				fsm_ctr<={DATA_WIDTH{1'b0}};//reset fsm each period
 			end else begin
 			if (count_direction==2'b10) begin
-				case(fsm_ctr)
+              case(fsm_ctr)
         motor_period-3:begin	//01 encoder state sent first
 				encoder_a<=1'b0;
 				encoder_b<=1'b1;

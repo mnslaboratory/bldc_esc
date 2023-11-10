@@ -1,4 +1,4 @@
- module bldc_esc #(
+module bldc_esc #(
   parameter DATA_WIDTH = 16, //only used at the 3rd subroutine
   parameter ENCODER_WIDTH = 3 //stop using it
 )(
@@ -8,10 +8,10 @@
   input wire encoder_a,  				// encoder A pin input
   input wire encoder_b,  				// encoder B pin input
   input [DATA_WIDTH-1:0]pwm_period,	//change period in clock cycles
-  input [DATA_WIDTH/2-1:0] period_reference,	// period_reference speed input, commented out since the ambiguity, will try with constant 900RPM period_reference speed
-  input wire [DATA_WIDTH/2-1:0] Kp_ext,//External proportional constant
-  input wire [DATA_WIDTH/2-1:0] Ki_ext,//External integral constant
-  input wire [DATA_WIDTH/2-1:0] Kd_ext,//External derivative constant
+  input [DATA_WIDTH-1:0] period_reference,	// period_reference speed input, commented out since the ambiguity, will try with constant 900RPM period_reference speed
+  input wire [DATA_WIDTH-1:0] Kp_ext,//External proportional constant
+  input wire [DATA_WIDTH-1:0] Ki_ext,//External integral constant
+  input wire [DATA_WIDTH-1:0] Kd_ext,//External derivative constant
   input wire override_internal_pid,		//select pin for external/internal pid constants
   output reg motor_positive,   		// BLDC motor PWM signal
   output reg motor_negative 			// Motor direction control (1 bit)
@@ -140,16 +140,16 @@
  // PID constants
    reg [DATA_WIDTH-1:0] period_speed = 16'h0;// Counter connected to rise of encoder A that will infer speed by measuring period of clk cycles
   reg [DATA_WIDTH-1:0] speed_ctr;
-  reg [DATA_WIDTH/2-1:0] Kp = {DATA_WIDTH/2{1'b0}};
-  reg [DATA_WIDTH/2-1:0] Ki = {DATA_WIDTH/2{1'b0}};
-  reg [DATA_WIDTH/2-1:0] Kd = {DATA_WIDTH/2{1'b0}};
+  reg [DATA_WIDTH-1:0] Kp = {DATA_WIDTH{1'b0}};
+  reg [DATA_WIDTH-1:0] Ki = {DATA_WIDTH{1'b0}};
+  reg [DATA_WIDTH-1:0] Kd = {DATA_WIDTH{1'b0}};
   
   //MUX Internal/External PID constants
   always @(posedge clk or posedge reset) begin
     if (reset) begin
-		Kp <= {DATA_WIDTH/2{1'b1}};
-		Ki <= {DATA_WIDTH/2{1'b0}};
-		Kd <= {DATA_WIDTH/2{1'b0}};
+		Kp <= {DATA_WIDTH{1'b1}};
+		Ki <= {DATA_WIDTH{1'b0}};
+		Kd <= {DATA_WIDTH{1'b0}};
     end else begin
 		if(override_internal_pid) begin
 			Kp<=Kp_ext;
@@ -167,11 +167,11 @@
 	
 
   // Variables for PID control
-  reg [DATA_WIDTH/2-1:0] error;
-  reg [(DATA_WIDTH)/2-1:0] integral;
-  reg [DATA_WIDTH/2-1:0] derivative;
+  reg signed[DATA_WIDTH-1:0] error;
+  reg signed[(DATA_WIDTH)-1:0] integral;
+  reg signed[DATA_WIDTH-1:0] derivative;
   reg signed [(DATA_WIDTH)-1:0] pid_output;
-  reg [DATA_WIDTH/2-1:0] previous_error;
+  reg signed[DATA_WIDTH-1:0] previous_error;
 	//Calculate Speed
 	//dubious logic of carrying out speed<->clock cycle conversion:
   //We will give constant period_reference of 900RPM=>15 rounds each second, with clock period t=1ms, period_reference=15e3 clock cycles
@@ -192,10 +192,11 @@
   
   
   // Calculate the error
-  always @(*) begin
+   always @(posedge clk or posedge reset) begin
 	if(reset) begin
 	error=8'b0;
 	end else begin
+      previous_error=error;
     error = period_reference - period_speed;
 	 end
   end
@@ -203,15 +204,15 @@
   // Calculate the integral
   always @(posedge clk or posedge reset) begin
     if (reset) begin
-      integral <= 8'b0;
-		previous_error <= {DATA_WIDTH/2{1'b0}};
+      integral <= 16'b0;
+		previous_error <= {DATA_WIDTH{1'b0}};
     end else begin
-      if (integral + error > 127) begin //These are very high values for ASIC, need to push for lower register(?)
+      if (integral + error > 2047) begin //These are very high values for ASIC, need to push for lower register(?)
 
-        integral <= 127;  
-      end else if (integral + error < -128) begin
+        integral <= 2047;  
+      end else if (integral + error < -2048) begin
       
-        integral <= -128; 
+        integral <= -2048; 
       end else begin
         integral <= integral + error;  
       end
@@ -219,17 +220,17 @@
   end
 
   // Calculate the derivative
-  always @(*) begin
+   always @(posedge clk) begin
     derivative = error - previous_error;
   end
 
   // Calculate the PID output
-  always @(*) begin
+   always @(posedge clk) begin
     pid_output = Kp * error + Ki * integral + Kd * derivative;	//compute pid response
-	 if(pid_output<=0) begin			//if pid output is negative, cap at 0
-			pwm_duty_cycle<=0;
-		end else if (pid_output>=pwm_period) begin	//if pid output above period, give 100% pwm
+     if(pid_output<1) begin			//if pid output is negative, cap at 0
 			pwm_duty_cycle<=pwm_period;
+		end else if (pid_output>pwm_period) begin	//if pid output above period, give 100% pwm
+			pwm_duty_cycle<=1;
 		end else begin
 			pwm_duty_cycle = pid_output;	//if in between values, give pid output as pwm
 		end

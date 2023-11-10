@@ -3,7 +3,7 @@ module top_module(clk,reset,pwm_en,override_internal_pid,pwm_period,period_refer
 parameter DATA_WIDTH=16;
 	input clk,reset,pwm_en,override_internal_pid;
 	input [DATA_WIDTH-1:0] pwm_period;
-	input [DATA_WIDTH/2-1:0] period_reference,Kp_ext,Ki_ext,Kd_ext;
+	input [DATA_WIDTH-1:0] period_reference,Kp_ext,Ki_ext,Kd_ext;
 	output motorpo,motorne;
 	
 	
