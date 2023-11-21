@@ -194,6 +194,7 @@ module bldc_esc #(
   // Calculate the error
    always @(posedge clk or posedge reset) begin
 	if(reset) begin
+		previous_error <= {DATA_WIDTH{1'b0}};
 	error=8'b0;
 	end else begin
       previous_error=error;
@@ -205,7 +206,6 @@ module bldc_esc #(
   always @(posedge clk or posedge reset) begin
     if (reset) begin
       integral <= 16'b0;
-		previous_error <= {DATA_WIDTH{1'b0}};
     end else begin
       if (integral + error > 2047) begin //These are very high values for ASIC, need to push for lower register(?)
 
