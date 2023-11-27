@@ -1,21 +1,20 @@
-module bldc_esc #(
+module bldc_esc_1 #(
   parameter DATA_WIDTH = 16, //only used at the 3rd subroutine
   parameter ENCODER_WIDTH = 3 //stop using it
 )(
-  input wire clk,              		// clock input. when there is no clk signal motor does not run
-  input wire reset,            		// when it is 1 motor does run active high
-  input wire pwm_en,						//Pin to enable pwm output	active high
-  input wire encoder_a,  				// encoder A pin input
-  input wire encoder_b,  				// encoder B pin input
-  input [DATA_WIDTH-1:0]pwm_period,	//change period in clock cycles
+  input clk,              		// clock input. when there is no clk signal motor does not run
+  input reset,            		// when it is 1 motor does run active high
+  input pwm_en,						//Pin to enable pwm output	active high
+  input encoder_a,  				// encoder A pin input
+  input encoder_b,  				// encoder B pin input
+  input [DATA_WIDTH-1:0] pwm_period,	//change period in clock cycles
   input [DATA_WIDTH-1:0] period_reference,	// period_reference speed input, commented out since the ambiguity, will try with constant 900RPM period_reference speed
-  input wire [DATA_WIDTH-1:0] Kp_ext,//External proportional constant
-  input wire [DATA_WIDTH-1:0] Ki_ext,//External integral constant
-  input wire [DATA_WIDTH-1:0] Kd_ext,//External derivative constant
-  input wire override_internal_pid,		//select pin for external/internal pid constants
+  input [DATA_WIDTH-1:0] Kp_ext,//External proportional constant
+  input [DATA_WIDTH-1:0] Ki_ext,//External integral constant
+  input [DATA_WIDTH-1:0] Kd_ext,//External derivative constant
+  input override_internal_pid,		//select pin for external/internal pid constants
   output reg motor_positive,   		// BLDC motor PWM signal
   output reg motor_negative 			// Motor direction control (1 bit)
-  
 );
   
   reg motor_pwm;
@@ -27,8 +26,8 @@ module bldc_esc #(
   reg [1:0]prev_encoder_state;
 	reg [1:0]pwm_direction;
 	//locked=1'b1;
-  //assign pwm_duty_cycle = pid_output; // BU BAĞLANTI ÇOK ÖNEMLİ ÇALIŞMIYOR OLABİLİR.
-  //assign reg ile çalışmıyor, eşitliğin always içinde yaratılması gerek.
+  //assign pwm_duty_cycle = pid_output; // BU BA?LANTI ÇOK ÖNEML? ÇALI?MIYOR OLAB?L?R.
+  //assign reg ile çal??m?yor, e?itli?in always içinde yarat?lmas? gerek.
 //1st subroutin=PWM GENERATOR////////////////////////////////////////////// 
  always @(posedge clk or posedge reset) begin
     if (reset) begin
@@ -87,14 +86,14 @@ module bldc_esc #(
 		motor_negative<=1'b0;
 	end else begin
 		if(period_reference>127) begin
-			motor_positive=1'b0;
-			motor_negative=motor_pwm;
+			motor_positive<=1'b0;
+			motor_negative<=motor_pwm;
 		end else if (period_reference>0) begin
-			motor_positive=motor_pwm;
-			motor_negative=1'b0;
+			motor_positive<=motor_pwm;
+			motor_negative<=1'b0;
 		end else begin
-			motor_positive=1'b0;
-			motor_negative=1'b0;
+			motor_positive<=1'b0;
+			motor_negative<=1'b0;
 			end
 		end
 	
@@ -195,10 +194,10 @@ module bldc_esc #(
    always @(posedge clk or posedge reset) begin
 	if(reset) begin
 		previous_error <= {DATA_WIDTH{1'b0}};
-	error=8'b0;
+	error<=8'b0;
 	end else begin
-      previous_error=error;
-    error = period_reference - period_speed;
+      previous_error<=error;
+    error <= period_reference - period_speed;
 	 end
   end
 
@@ -221,21 +220,18 @@ module bldc_esc #(
 
   // Calculate the derivative
    always @(posedge clk) begin
-    derivative = error - previous_error;
+    derivative <= error - previous_error;
   end
 
   // Calculate the PID output
    always @(posedge clk) begin
-    pid_output = Kp * error + Ki * integral + Kd * derivative;	//compute pid response
+    pid_output <= Kp * error + Ki * integral + Kd * derivative;	//compute pid response
      if(pid_output<1) begin			//if pid output is negative, cap at 0
 			pwm_duty_cycle<=pwm_period;
 		end else if (pid_output>pwm_period) begin	//if pid output above period, give 100% pwm
 			pwm_duty_cycle<=1;
 		end else begin
-			pwm_duty_cycle = pid_output;	//if in between values, give pid output as pwm
+			pwm_duty_cycle<= pid_output;	//if in between values, give pid output as pwm
 		end
   end
-  
- 
-
 endmodule
