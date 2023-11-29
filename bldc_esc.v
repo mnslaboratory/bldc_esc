@@ -1,7 +1,4 @@
-module bldc_esc_1 #(
-  parameter DATA_WIDTH = 16, //only used at the 3rd subroutine
-  parameter ENCODER_WIDTH = 3 //stop using it
-)(
+module bldc_esc #(parameter DATA_WIDTH = 16)(
   input clk,              		// clock input. when there is no clk signal motor does not run
   input reset,            		// when it is 1 motor does run active high
   input pwm_en,						//Pin to enable pwm output	active high
@@ -16,140 +13,105 @@ module bldc_esc_1 #(
   output reg motor_positive,   		// BLDC motor PWM signal
   output reg motor_negative 			// Motor direction control (1 bit)
 );
-  
   reg motor_pwm;
-   reg [DATA_WIDTH-1:0] pwm_counter;
-
+  reg [DATA_WIDTH-1:0] pwm_counter;
   reg [DATA_WIDTH-1:0] pwm_duty_cycle;
-  // Ask encoder's current and previous states in the 2nd subroutine
   reg [1:0]encoder_state;
   reg [1:0]prev_encoder_state;
-	reg [1:0]pwm_direction;
-	//locked=1'b1;
-  //assign pwm_duty_cycle = pid_output; // BU BA?LANTI ÇOK ÖNEML? ÇALI?MIYOR OLAB?L?R.
-  //assign reg ile çal??m?yor, e?itli?in always içinde yarat?lmas? gerek.
-//1st subroutin=PWM GENERATOR////////////////////////////////////////////// 
+  reg [1:0]pwm_direction;
+  //PID control////////////////////////////////////////////////
+  // PID constants
+  reg [DATA_WIDTH-1:0] period_speed ;// Counter connected to rise of encoder A that will infer speed by measuring period of clk cycles
+  reg [DATA_WIDTH-1:0] speed_ctr;
+  reg [DATA_WIDTH-1:0] Kp ;
+  reg [DATA_WIDTH-1:0] Ki ;
+  reg [DATA_WIDTH-1:0] Kd ;
+  // Variables for PID control
+  reg signed[DATA_WIDTH-1:0] error;
+  reg signed[(DATA_WIDTH)-1:0] integral;
+  reg signed[DATA_WIDTH-1:0] derivative;
+  reg signed [(DATA_WIDTH)-1:0] pid_output;
+  reg signed[DATA_WIDTH-1:0] previous_error;
  always @(posedge clk or posedge reset) begin
     if (reset) begin
-      pwm_counter <= {DATA_WIDTH{1'b0}};
-    end else begin
-      pwm_counter <= pwm_counter + 1;
-
-      motor_pwm <= (pwm_counter < pwm_duty_cycle) & pwm_en; // Generate PWM signal and send it to the motor
-
-      // Reset PWM counter at the end of the PWM period
-      if (pwm_counter == pwm_period) begin
-        pwm_counter <= 16'd0;
-      end
-    end
-  end
- 
-///////////////////////////////////////////////////////
-  always @(posedge clk or posedge reset) begin
-    if (reset) begin
-      encoder_state <= 2'b0;
-      prev_encoder_state <= 2'b0;
-      pwm_direction<=2'b00;
-		
-    end else begin
-    encoder_state <= {encoder_a, encoder_b};
-      case ({encoder_state, prev_encoder_state})
-
-      // Rotate in one direction (e.g., forward)
-      4'b0100, 4'b1101,4'b1011: begin
-        pwm_direction<=2'b10;
-      end
-
-      // Rotate in the opposite direction (e.g., reverse)
-      4'b1000,4'b1110,4'b0111: begin
-        pwm_direction<=2'b01;
-      end
-
-      // No change (no rotation)
-      4'b1100, 4'b0011, 4'b1001,4'b0110: begin
+        integral <= 16'b0;
+        pwm_counter <= {DATA_WIDTH{1'b0}};
+        encoder_state <= 2'b0;
+        prev_encoder_state <= 2'b0;
         pwm_direction<=2'b00;
-      end
-
-      default: begin
-        // Keep the previous direction in case of an unexpected state
-        pwm_direction<=pwm_direction;
-      end
-    endcase
-	 
-      prev_encoder_state <= encoder_state;
-    end
-  end
-  
-  always @(posedge clk or posedge reset) begin
-	if(reset) begin
-		motor_positive<=1'b0;
-		motor_negative<=1'b0;
-	end else begin
-		if(period_reference>127) begin
+        motor_positive<=1'b0;
+        motor_negative<=1'b0;
+        Kp <= 16'd1;
+        Ki <= 16'd0;
+        Kd <= 16'd0;
+        speed_ctr<={DATA_WIDTH{1'b0}};
+        previous_error <= {DATA_WIDTH{1'b0}};
+        error<=8'b0;
+        period_speed <= 16'b0;
+        pid_output <= 16'b0;
+        derivative <= 16'b0;
+        pwm_duty_cycle <= 16'b0;
+        motor_pwm <= 1'b0;
+    end 
+    else begin
+        pid_output <= Kp * error + Ki * integral + Kd * derivative;	//compute pid response
+        if(pid_output<1) begin			//if pid output is negative, cap at 0
+			pwm_duty_cycle<=pwm_period;
+		end 
+		else if (pid_output>pwm_period) begin	//if pid output above period, give 100% pwm
+			pwm_duty_cycle<=1;
+		end 
+		else begin
+			pwm_duty_cycle<= pid_output;	//if in between values, give pid output as pwm
+		end
+        derivative <= error - previous_error;
+        if (integral + error > 2047) begin //These are very high values for ASIC, need to push for lower register(?)
+            integral <= 2047;  
+        end 
+        else if (integral + error < -2048) begin
+            integral <= -2048; 
+        end 
+        else begin
+            integral <= integral + error;  
+        end
+        previous_error<=error;
+        error <= period_reference - period_speed;
+        motor_pwm <= (pwm_counter < pwm_duty_cycle) & pwm_en; // Generate PWM signal and send it to the motor
+        // Reset PWM counter at the end of the PWM period
+        if (pwm_counter == pwm_period) begin
+            pwm_counter <= 16'd0;
+        end
+        else begin
+            pwm_counter <= pwm_counter + 1;
+        end
+        prev_encoder_state <= encoder_state;
+        encoder_state <= {encoder_a, encoder_b};
+        case ({encoder_state, prev_encoder_state})
+            4'b0100, 4'b1101,4'b1011: begin// Rotate in one direction (e.g., forward)
+                pwm_direction<=2'b10;
+            end
+            4'b1000,4'b1110,4'b0111: begin// Rotate in the opposite direction (e.g., reverse)
+                pwm_direction<=2'b01;
+            end
+            4'b1100, 4'b0011, 4'b1001,4'b0110: begin// No change (no rotation)
+                pwm_direction<=2'b00;
+            end
+            default: begin
+                pwm_direction<=pwm_direction;// Keep the previous direction in case of an unexpected state
+            end
+        endcase
+      if(period_reference>32767) begin //check negative references by 2's complement
 			motor_positive<=1'b0;
 			motor_negative<=motor_pwm;
-		end else if (period_reference>0) begin
+		end
+		else if (period_reference>0) begin
 			motor_positive<=motor_pwm;
 			motor_negative<=1'b0;
-		end else begin
+		end 
+		else begin
 			motor_positive<=1'b0;
 			motor_negative<=1'b0;
 			end
-		end
-	
-  
-  end
-  
-  //always @(pwm_direction or pwm_en or reset) begin //method to determine motor pins from encoder
-  //  if (reset) begin
-  //    motor_positive <= 1'b0;
-  //    motor_negative <= 1'b0;
-	//	
-    //end else begin
-	 //
-		//if(pwm_en==1'b0)begin
-		//	motor_positive<=1'b0;
-		//	motor_negative<=1'b0;
-	//	end else begin
-   //   case(pwm_direction)
-   //     2'b00: begin
-   //       
-   //   	motor_positive <= 1'b0;
-   //   	motor_negative <= 1'b0;
-   //     end
-   //     2'b01:begin
-   //       motor_positive<=1'b0;
-   //       motor_negative<=motor_pwm;
-   //     end
-   //     2'b10:begin
-   //       motor_positive<=motor_pwm;
-   //       motor_negative<=1'b0;
-   //     end
-   //     default: begin
-   //       
-   //   		motor_positive <= 1'b0;
-   //   		motor_negative <= 1'b0;
-   //     end
-   //   endcase
-	//	end
-   // end
-  //end
-  
-//PID control////////////////////////////////////////////////
- // PID constants
-   reg [DATA_WIDTH-1:0] period_speed = 16'h0;// Counter connected to rise of encoder A that will infer speed by measuring period of clk cycles
-  reg [DATA_WIDTH-1:0] speed_ctr;
-  reg [DATA_WIDTH-1:0] Kp = {DATA_WIDTH{1'b0}};
-  reg [DATA_WIDTH-1:0] Ki = {DATA_WIDTH{1'b0}};
-  reg [DATA_WIDTH-1:0] Kd = {DATA_WIDTH{1'b0}};
-  
-  //MUX Internal/External PID constants
-  always @(posedge clk or posedge reset) begin
-    if (reset) begin
-		Kp <= {DATA_WIDTH{1'b1}};
-		Ki <= {DATA_WIDTH{1'b0}};
-		Kd <= {DATA_WIDTH{1'b0}};
-    end else begin
 		if(override_internal_pid) begin
 			Kp<=Kp_ext;
 			Ki<=Ki_ext;
@@ -159,79 +121,12 @@ module bldc_esc_1 #(
 			Ki<=Ki;
 			Kd<=Kd;
 		end
-	 end
-  end
-  
-  
-	
-
-  // Variables for PID control
-  reg signed[DATA_WIDTH-1:0] error;
-  reg signed[(DATA_WIDTH)-1:0] integral;
-  reg signed[DATA_WIDTH-1:0] derivative;
-  reg signed [(DATA_WIDTH)-1:0] pid_output;
-  reg signed[DATA_WIDTH-1:0] previous_error;
-	//Calculate Speed
-	//dubious logic of carrying out speed<->clock cycle conversion:
-  //We will give constant period_reference of 900RPM=>15 rounds each second, with clock period t=1ms, period_reference=15e3 clock cycles
-	always @(posedge reset or posedge clk)
-	begin
-		if(reset) begin
-			speed_ctr<={DATA_WIDTH{1'b0}};
-		end
-		else begin
-			if(prev_encoder_state[0]==1'b0 && encoder_a==1'b1) begin
-				period_speed<=speed_ctr;
-				speed_ctr<={DATA_WIDTH{1'b0}};
-			end else begin
-				speed_ctr<=speed_ctr+1;
-			end
-		end
-	end
-  
-  
-  // Calculate the error
-   always @(posedge clk or posedge reset) begin
-	if(reset) begin
-		previous_error <= {DATA_WIDTH{1'b0}};
-	error<=8'b0;
-	end else begin
-      previous_error<=error;
-    error <= period_reference - period_speed;
-	 end
-  end
-
-  // Calculate the integral
-  always @(posedge clk or posedge reset) begin
-    if (reset) begin
-      integral <= 16'b0;
-    end else begin
-      if (integral + error > 2047) begin //These are very high values for ASIC, need to push for lower register(?)
-
-        integral <= 2047;  
-      end else if (integral + error < -2048) begin
-      
-        integral <= -2048; 
-      end else begin
-        integral <= integral + error;  
-      end
+      if((prev_encoder_state[0]==1'b0 && encoder_a==1'b1) || speed_ctr==16'hffff) begin
+            period_speed<=speed_ctr;
+            speed_ctr<={DATA_WIDTH{1'b0}};
+        end else begin
+            speed_ctr<=speed_ctr+1;
+        end
     end
-  end
-
-  // Calculate the derivative
-   always @(posedge clk) begin
-    derivative <= error - previous_error;
-  end
-
-  // Calculate the PID output
-   always @(posedge clk) begin
-    pid_output <= Kp * error + Ki * integral + Kd * derivative;	//compute pid response
-     if(pid_output<1) begin			//if pid output is negative, cap at 0
-			pwm_duty_cycle<=pwm_period;
-		end else if (pid_output>pwm_period) begin	//if pid output above period, give 100% pwm
-			pwm_duty_cycle<=1;
-		end else begin
-			pwm_duty_cycle<= pid_output;	//if in between values, give pid output as pwm
-		end
-  end
-endmodule
+ end
+endmodule 
