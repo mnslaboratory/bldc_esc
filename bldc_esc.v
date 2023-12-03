@@ -1,4 +1,4 @@
-module bldc_esc #(parameter DATA_WIDTH = 16)(
+module bldc_esc #(parameter DATA_WIDTH = 16,parameter debounce = 3)(
   input clk,              		// clock input. when there is no clk signal motor does not run
   input reset,            		// when it is 1 motor does run active high
   input pwm_en,						//Pin to enable pwm output	active high
@@ -32,6 +32,11 @@ module bldc_esc #(parameter DATA_WIDTH = 16)(
   reg signed[DATA_WIDTH-1:0] derivative;
   reg signed [(DATA_WIDTH)-1:0] pid_output;
   reg signed[DATA_WIDTH-1:0] previous_error;
+  
+  reg [2:0] encoder_a_shift_reg;
+  reg encoder_a_reg;
+  reg [2:0] encoder_b_shift_reg;
+  reg encoder_b_reg;
  always @(posedge clk or posedge reset) begin
     if (reset) begin
         integral <= 16'b0;
@@ -52,8 +57,23 @@ module bldc_esc #(parameter DATA_WIDTH = 16)(
         derivative <= 16'b0;
         pwm_duty_cycle <= 16'b0;
         motor_pwm <= 1'b0;
+        
+        encoder_a_shift_reg <= 3'b0;
+        encoder_a_reg <= 1'b0;
+        encoder_b_shift_reg <= 3'b0;
+        encoder_b_reg <= 1'b0;
     end 
     else begin
+        encoder_a_shift_reg <= {encoder_a_shift_reg[debounce-2:0],encoder_a};
+        if (encoder_a_shift_reg == {debounce{1'b0}} || encoder_a_shift_reg == {debounce{1'b1}})begin
+            encoder_a_reg <= encoder_a_shift_reg[0];
+        end
+        
+        encoder_b_shift_reg <= {encoder_b_shift_reg[debounce-2:0],encoder_b};
+        if (encoder_b_shift_reg == {debounce{1'b0}} || encoder_b_shift_reg == {debounce{1'b1}})begin
+            encoder_b_reg <= encoder_b_shift_reg[0];
+        end
+        
         pid_output <= Kp * error + Ki * integral + Kd * derivative;	//compute pid response
         if(pid_output<1) begin			//if pid output is negative, cap at 0
 			pwm_duty_cycle<=pwm_period;
@@ -84,8 +104,8 @@ module bldc_esc #(parameter DATA_WIDTH = 16)(
         else begin
             pwm_counter <= pwm_counter + 1;
         end
+        encoder_state <= {encoder_a_reg, encoder_b_reg};
         prev_encoder_state <= encoder_state;
-        encoder_state <= {encoder_a, encoder_b};
         case ({encoder_state, prev_encoder_state})
             4'b0100, 4'b1101,4'b1011: begin// Rotate in one direction (e.g., forward)
                 pwm_direction<=2'b10;
@@ -100,28 +120,48 @@ module bldc_esc #(parameter DATA_WIDTH = 16)(
                 pwm_direction<=pwm_direction;// Keep the previous direction in case of an unexpected state
             end
         endcase
-      if(period_reference>32767) begin //check negative references by 2's complement
-			motor_positive<=1'b0;
-			motor_negative<=motor_pwm;
-		end
-		else if (period_reference>0) begin
-			motor_positive<=motor_pwm;
-			motor_negative<=1'b0;
+        if(pwm_en==1'b0)begin
+            motor_positive<=1'b0;
+            motor_negative<=1'b0;
 		end 
 		else begin
-			motor_positive<=1'b0;
-			motor_negative<=1'b0;
-			end
+            case(pwm_direction)
+                2'b00: begin
+                  
+      				if(period_reference>32767) begin //check negative references by 2's complement
+						motor_positive<=1'b0;
+						motor_negative<=motor_pwm;
+					end
+					else begin
+						motor_positive<=motor_pwm;
+						motor_negative<=1'b0;
+					end
+                end 
+                2'b01:begin
+                    motor_positive<=1'b0;
+                    motor_negative<=motor_pwm;
+                end
+                2'b10:begin
+                    motor_positive<=motor_pwm;
+                    motor_negative<=1'b0;
+                end
+                default: begin
+                    motor_positive <= 1'b0;
+                    motor_negative <= 1'b0;
+                end
+            endcase
+        end
 		if(override_internal_pid) begin
 			Kp<=Kp_ext;
 			Ki<=Ki_ext;
 			Kd<=Kd_ext;
-		end else begin
+		end 
+		else begin
 			Kp<=Kp;
 			Ki<=Ki;
 			Kd<=Kd;
 		end
-      if((prev_encoder_state[0]==1'b0 && encoder_a==1'b1) || speed_ctr==16'hffff) begin
+      if((prev_encoder_state[0]==1'b0 && encoder_a_reg==1'b1) || speed_ctr==16'h00ff) begin
             period_speed<=speed_ctr;
             speed_ctr<={DATA_WIDTH{1'b0}};
         end else begin
@@ -129,4 +169,4 @@ module bldc_esc #(parameter DATA_WIDTH = 16)(
         end
     end
  end
-endmodule 
+endmodule
