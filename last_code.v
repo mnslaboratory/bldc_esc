@@ -36,7 +36,7 @@ module bldc_esc_1 #(parameter DATA_WIDTH = 16,parameter debounce = 2)(
   reg signed[DATA_WIDTH-1:0] error;
   reg signed[(DATA_WIDTH)-1:0] integral;
   reg signed[DATA_WIDTH-1:0] derivative;
-  reg signed [(DATA_WIDTH)-1:0] pid_output;
+  reg signed[(DATA_WIDTH)-1:0] pid_output;
   reg signed[DATA_WIDTH-1:0] previous_error;
   
   reg [2:0] encoder_a_shift_reg;
@@ -58,9 +58,9 @@ module bldc_esc_1 #(parameter DATA_WIDTH = 16,parameter debounce = 2)(
         pwm_direction<=2'b00;
         motor_positive<=1'b0;
         motor_negative<=1'b0;
-        Kp <= 16'd1;
-        Ki <= 16'd0;
-        Kd <= 16'd0;
+        Kp <= 16'h0010;
+        Ki <= 16'd10;
+        Kd <= 16'd10;
         speed_ctr<={DATA_WIDTH{1'b0}};
         previous_error <= {DATA_WIDTH{1'b0}};
         error<=8'b0;
@@ -86,26 +86,29 @@ module bldc_esc_1 #(parameter DATA_WIDTH = 16,parameter debounce = 2)(
             encoder_b_reg <= encoder_b_shift_reg[0];
         end
         
-        pid_output <= Kp * error + Ki * integral + Kd * derivative;	//compute pid response
+//        pid_output <= (Kp * error)>>4 + (Ki * integral)>>4 + (Kd * derivative)>>4;	//compute pid response
+        pid_output <= (Kp * error) + (Ki * integral) + (Kd * derivative);	//compute pid response
         if(pid_output<1) begin			//if pid output is negative, cap at 0
 			pwm_duty_cycle<=pwm_period;
 		end 
 		else if (pid_output>pwm_period) begin	//if pid output above period, give 100% pwm
-			pwm_duty_cycle<=1;
-		end 
-		else begin
-			pwm_duty_cycle<= pid_output;	//if in between values, give pid output as pwm
+			pwm_duty_cycle<=pwm_period>>2;
 		end
+		else begin
+			pwm_duty_cycle<=pid_output;	//if in between values, give pid output as pwm
+		end
+		
         derivative <= error - previous_error;
         if (integral + error > 2047) begin //These are very high values for ASIC, need to push for lower register(?)
-            integral <= 2047;  
-        end 
-        else if (integral + error < -2048) begin
-            integral <= -2048; 
-        end 
-        else begin
-            integral <= integral + error;  
+            integral <= 2047;
         end
+        else if (integral + error < -2048) begin
+            integral <= -2048;
+        end
+        else begin
+            integral <= integral + error;
+        end
+        
         previous_error<=error;
         error <= period_reference - period_speed;
         motor_pwm <= (pwm_counter < pwm_duty_cycle) & pwm_en; // Generate PWM signal and send it to the motor
@@ -198,8 +201,6 @@ module bldc_esc_1 #(parameter DATA_WIDTH = 16,parameter debounce = 2)(
 		else begin
             speed_ctr<=speed_ctr+1;
 		end
-		
-		
 		
 //        if((prev_encoder_state[1]==1'b0 && encoder_a_reg==1'b1) || speed_ctr==16'hffff) begin
 //            period_speed<=speed_ctr;
