@@ -1,0 +1,27 @@
+// Find I2C devices
+
+// array to store the present adresses
+var Slave_Address = 0x72;
+var rgadr = [];
+
+
+//Write(Slave_Address, 0x45, 175);
+//rgadr =  Read(Slave_Address,[0x45],1);
+
+//for(var i = 64; i < 84 ; i++){
+//    for(var j = 0; j < 255 ; j++){
+//    Write(Slave_Address, i, j);
+//    rgadr = Read(Slave_Address,[i],1);
+//    }
+//}
+
+    Write(Slave_Address, 0x40, 0x27); // pwm period high 8 bit
+    Write(Slave_Address, 0x41, 0x10); // pwm period low 8 bit
+    Write(Slave_Address, 0x42, 0x09); // pwm referance high 8 bit
+    Write(Slave_Address, 0x43, 0xC4); // pwm referance low 8 bit
+    Write(Slave_Address, 0x44, 0x00); // kp high 8 bit
+    Write(Slave_Address, 0x45, 0x01); // kp low 8 bit
+    Write(Slave_Address, 0x46, 0x00); // ki high 8 bit
+    Write(Slave_Address, 0x47, 0x05); // ki low 8 bit
+    Write(Slave_Address, 0x48, 0x00); // kd high 8 bit
+    Write(Slave_Address, 0x49, 0x03); // kd low 8 bit
