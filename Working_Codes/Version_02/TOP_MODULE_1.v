@@ -71,7 +71,7 @@ module esc_1(
         . Kd_ext(Kd_ext_i2c_wire),            //0x43
         . Kp_int_i(Kp_int_wire), 
         . override_internal_pid(override_internal_pid_i2c_wire),   //0x44
-        . autotune(tunerreset_autotune)             // 0x48
+        . tunerreset_autotune(tunerreset_autotune)             // 0x48
     );
     
     bldc_esc_1 BLDC_ESC(
