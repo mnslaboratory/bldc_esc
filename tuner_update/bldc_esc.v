@@ -3,6 +3,7 @@ module bldc_esc_1 #(parameter DATA_WIDTH = 16,parameter debounce = 3)(
   input reset,            		// when it is 1 motor does run active high
   input tuner_reset,
   input pwm_en,						//Pin to enable pwm output	active high
+  input [2:0] autotune_select,
   input encoder_a,  				// encoder A pin input
   input encoder_b,  				// encoder B pin input
   input [DATA_WIDTH-1:0] pwm_period,	//change period in clock cycles
