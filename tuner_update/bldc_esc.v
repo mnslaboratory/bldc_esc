@@ -1,7 +1,7 @@
 module bldc_esc_1 #(parameter DATA_WIDTH = 16,parameter debounce = 2)(
   input clk,              		// clock input. when there is no clk signal motor does not run
   input reset,            		// when it is 1 motor does run active high
-  input button_tuner_reset,
+  input tuner_reset,
   input [2:0] autotune_select,
   input pwm_en,						//Pin to enable pwm output	active high
   input encoder_a,  				// encoder A pin input
@@ -26,7 +26,7 @@ module bldc_esc_1 #(parameter DATA_WIDTH = 16,parameter debounce = 2)(
 	reg [DATA_WIDTH-1:0] Kd_int;
 pid_tuner tuner_inst_1(
 	.clk(clk),
-	.reset(reset || button_tuner_reset),
+	.reset(reset | tuner_reset),
 	.pid_select(autotune_select),
 	.period_speed(period_speed),
 	.tuning_done(tuning_done),
@@ -206,7 +206,7 @@ pid_tuner tuner_inst_1(
 			Kd<=Kd_int;
 		end
 		else begin
-			Kp<=Kp;
+			Kp<=Kp_int;
 			Ki<=Ki;
 			Kd<=Kd;
 		end
