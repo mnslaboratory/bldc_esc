@@ -30,7 +30,8 @@ module esc_1(
     wire [7:0] index_1_i2c;
     wire slow_clk;
     wire [7:0] Kp_int_wire;
-    
+    wire [2:0] tunerreset_autotune;
+     
     Divided_Clock(
         . clk(clk),
         . rst(rst),
